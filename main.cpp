@@ -17,21 +17,17 @@ public:
 private:
 
   const double amplitude;
-//  const unsigned int frequency;
   const double frequency;
 
 public:
 
-//  signal(const double a = 1.0, const unsigned int f = 1) : amplitude(a), frequency(f)
-//  {
-//  }
   signal(const double a = 1.0, const double f = 1.0) : amplitude(a), frequency(f)
   {
   }
 
   const double value(const double x)
   {
-    if(x < 0 || x > 100) //max input time(s)
+    if(x < 0 )
     {
       return 0;
     }
