@@ -4,9 +4,11 @@
 #include <limits>
 #include <complex>
 #include <fstream>
+#include <unistd.h>
 
 using namespace std;
-class c_sinewave
+
+class signal
 {
 public:
 
@@ -15,17 +17,21 @@ public:
 private:
 
   const double amplitude;
-  const unsigned int frequency;
+//  const unsigned int frequency;
+  const double frequency;
 
 public:
 
-  c_sinewave(const double a = 1.0, const unsigned int f = 1) : amplitude(a), frequency(f)
+//  signal(const double a = 1.0, const unsigned int f = 1) : amplitude(a), frequency(f)
+//  {
+//  }
+  signal(const double a = 1.0, const double f = 1.0) : amplitude(a), frequency(f)
   {
   }
 
   const double value(const double x)
   {
-    if(x < 0 || x > 1)
+    if(x < 0 || x > 100) //max input time(s)
     {
       return 0;
     }
@@ -34,56 +40,59 @@ public:
       return amplitude * ::sin((two_pi * frequency) * x);
     }
   }
+  //input:last_time--total time that the sin wave last
+  void getsinvalue(const float last_time)
+  {
+      const int point = 100; //show 100 point in every period
+      ofstream file("out_sin.cvs");
+      if (!file.is_open())
+      {
+          std:cout<<"open file error."<<endl;
+      }
+      for(int i = 0; i < last_time * point - 1; i++)
+      {
+          const double x = static_cast<double>(i) / point;
+          usleep(int(1000000/point));  //delay ms
+          std::cout << x << "," << signal::value(x) << endl;
+          file << std::setprecision(4) << x << "," << signal::value(x) << endl;
+      }
+  }
 
+  void getsquarewave(const float last_time)
+  {
+      const int point = 100;
+      unsigned char up = 1;
+      float out_value = signal::amplitude;
+      ofstream file("out_square.cvs");
+      if (!file.is_open())
+      {
+          std:cout<<"open file error."<<endl;
+      }
+      for(int i = 0; i < last_time * point - 1; i++)
+      {
+          const double x = static_cast<double>(i) / point;
+          usleep(int(1000000/point));
+          if(int(2.0*signal::frequency*i/point)%2==0)
+          {
+              out_value = signal::amplitude;
+          }
+          else
+          {
+              out_value = -signal::amplitude;
+          }
+          std::cout << x << "," << out_value << endl;
+          file << std::setprecision(4) << x << "," << out_value << endl;
+      }
+  }
 };
 
-const double c_sinewave::two_pi = ::atan(1) * 8.0;
+const double signal::two_pi = ::atan(1) * 8.0;
 
 int main(int argc, char* argv[])
 {
-  // Test it.
-  ofstream file("out.cvs");
-  if (!file.is_open())
-  {
-      std:cout<<"open file error."<<endl;
-  }
-  c_sinewave sinewave(10.0, 1);
-
-  const int n_point = 1000;
-
-  for(int i = 0; i < n_point + 1; i++)
-  {
-    const double x = static_cast<double>(i) / n_point;
-
-    std::cout << std::fixed
-              << std::showpos
-              << std::setprecision(4)
-              << x
-              << ", "
-              << std::setprecision(std::numeric_limits<double>::digits10 - 1)
-              << sinewave.value(x)
-              << std::endl;
-    file << std::setprecision(4) << x << "," << sinewave.value(x) << endl;
-  }
-  file.close();
-
-  return 0;
+     signal sinwave(8.0,2);
+     sinwave.getsinvalue(4.3);
+     signal squarewave(7.0,1.5);
+     squarewave.getsquarewave(4);
+    return 0;
 }
-
-//#include <fstream>
-
-//using namespace std;
-
-//int main()
-//{
-//        //定义文件输出流
-//    ofstream oFile;
-
-//        //打开要输出的文件
-//    oFile.open("scoresheet.csv", ios::out | ios::trunc);
-//    oFile << "姓名" << "," << "年龄" << "," << "班级" << "," << "班主任" << endl;
-//    oFile << "张三" << "," << "22" << "," << "1" << "," << "JIM" << endl;
-//    oFile << "李四" << "," << "23" << "," << "3" << "," << "TOM" << endl;
-
-//    oFile.close();
-//}
